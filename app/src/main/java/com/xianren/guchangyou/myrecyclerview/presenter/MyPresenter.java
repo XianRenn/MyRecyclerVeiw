@@ -14,9 +14,9 @@ public class MyPresenter {
     ModelInterface modelInterface;
     ViewListener myListener;
 
-    public void getData() {
+    public void getData(int page) {
         modelInterface = new ModeImpl();
-        List<String> list = (List<String>) modelInterface.getData();
+        List<String> list = (List<String>) modelInterface.getData(page);
         myListener.refreshUi(list);
     }
 

@@ -7,5 +7,5 @@ import java.util.List;
  */
 
 public interface ViewListener {
-    public  void refreshUi(List<?>list);
+    public  void refreshUi(List<String> list);
 }
