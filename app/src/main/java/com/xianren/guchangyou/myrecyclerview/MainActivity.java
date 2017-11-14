@@ -6,6 +6,10 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Toast;
 
 import com.xianren.guchangyou.myrecyclerview.model.OnLoadMore;
 import com.xianren.guchangyou.myrecyclerview.View.ViewListener;
@@ -20,17 +24,49 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
     RecyclerViewAdapter recyclerViewAdapter;
     OnLoadMore onLoadMore;
     public static boolean isScrollDown = false;
+    public static boolean isRefresh = false;
+    float startY=0,endY=0,movY=0;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         myRecyclerView = (RecyclerView) findViewById(R.id.myRecyclerView);
         myPresenter = new MyPresenter();
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         myRecyclerView.setLayoutManager(linearLayoutManager);
         myPresenter.setListener(this);
         recyclerViewAdapter = new RecyclerViewAdapter(myPresenter);
         onLoadMore = recyclerViewAdapter.setLoadMoreListen();
+        myRecyclerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                switch (event.getAction())
+                {
+                    case  MotionEvent.ACTION_DOWN:
+                        startY=event.getY();
+                        break;
+                    case  MotionEvent.ACTION_MOVE:
+                        endY=event.getY();
+                        movY=endY-startY;
+                      int pos=linearLayoutManager.findFirstVisibleItemPosition();
+                        if(movY>0 && pos==0)
+                        {
+                            Log.i("状态","正在下拉"+movY);
+                            isRefresh=true;
+                        }
+                        else
+                            isRefresh=false;
+                        break;
+                    case  MotionEvent.ACTION_UP:
+                        if(movY>0 && isRefresh)
+                        Toast.makeText(MainActivity.this,"放开刷新 ",Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                return false;
+            }
+        });
+
         myRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {

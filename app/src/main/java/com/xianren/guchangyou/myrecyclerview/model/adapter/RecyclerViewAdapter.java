@@ -17,6 +17,7 @@ import java.util.List;
 import base.Constants;
 
 import static base.Constants.TYPE_FOOTER;
+import static base.Constants.TYPE_HEADER;
 import static base.Constants.TYPE_NORMAL;
 
 /**
@@ -35,16 +36,23 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
-        if (viewType == TYPE_FOOTER) {
-            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.footer_view_sample,parent, false);
-            FooterViewHolder myViewHolder = new FooterViewHolder(view);
-            return myViewHolder;
-        } else {
-            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recycler, parent, false);
-            MyViewHolder myViewHolder = new MyViewHolder(view);
-            return myViewHolder;
-
+        switch (viewType)
+        {
+            case TYPE_HEADER:
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_view_sample,parent, false);
+                FooterViewHolder header = new FooterViewHolder(view);
+                return header;
+            case  TYPE_FOOTER:
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.footer_view_sample,parent, false);
+                FooterViewHolder footerViewHolder = new FooterViewHolder(view);
+                return footerViewHolder;
+            case  TYPE_NORMAL:
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recycler, parent, false);
+                MyViewHolder myViewHolder = new MyViewHolder(view);
+                return myViewHolder;
+            default: return  null;
         }
+
     }
 
     @Override
@@ -56,6 +64,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
 
     @Override
     public int getItemViewType(int position) {
+        if(position==0)
+        {
+            return  TYPE_HEADER;
+        }
         if (position >= data.size()) {
             return TYPE_FOOTER;
         }
@@ -64,7 +76,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
 
     @Override
     public int getItemCount() {
-        return data.size() + 1;
+        return data.size() + 2;
     }
 
 

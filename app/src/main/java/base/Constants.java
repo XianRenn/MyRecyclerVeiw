@@ -6,5 +6,6 @@ package base;
 
 public class Constants {
     public static final int TYPE_FOOTER = 5;
+    public static final int TYPE_HEADER = 4;
     public static final int TYPE_NORMAL = 0;
 }
