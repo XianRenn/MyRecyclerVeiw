@@ -1,6 +1,5 @@
 package com.xianren.guchangyou.myrecyclerview.model.adapter;
 
-import android.provider.SyncStateContract;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,8 +13,6 @@ import com.xianren.guchangyou.myrecyclerview.presenter.MyPresenter;
 import java.util.ArrayList;
 import java.util.List;
 
-import base.Constants;
-
 import static base.Constants.TYPE_FOOTER;
 import static base.Constants.TYPE_HEADER;
 import static base.Constants.TYPE_NORMAL;
@@ -28,6 +25,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
     public List<String> data;
     MyPresenter myPresenter;
     static int page = 1;
+
     public RecyclerViewAdapter(MyPresenter myPresenter) {
         this.myPresenter = myPresenter;
         data = new ArrayList<>();
@@ -36,21 +34,25 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
-        switch (viewType)
-        {
+        switch (viewType) {
             case TYPE_HEADER:
-                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_view_sample,parent, false);
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_view_sample, parent, false);
                 FooterViewHolder header = new FooterViewHolder(view);
+                RecyclerView.LayoutParams param = (RecyclerView.LayoutParams) view.getLayoutParams();
+                param.height = 0;
+                param.width = 0;
+                view.setLayoutParams(param);
                 return header;
-            case  TYPE_FOOTER:
-                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.footer_view_sample,parent, false);
+            case TYPE_FOOTER:
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.footer_view_sample, parent, false);
                 FooterViewHolder footerViewHolder = new FooterViewHolder(view);
                 return footerViewHolder;
-            case  TYPE_NORMAL:
+            case TYPE_NORMAL:
                 view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recycler, parent, false);
                 MyViewHolder myViewHolder = new MyViewHolder(view);
                 return myViewHolder;
-            default: return  null;
+            default:
+                return null;
         }
 
     }
@@ -64,9 +66,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
 
     @Override
     public int getItemViewType(int position) {
-        if(position==0)
-        {
-            return  TYPE_HEADER;
+        if (position == 0) {
+            return TYPE_HEADER;
         }
         if (position >= data.size()) {
             return TYPE_FOOTER;
@@ -76,7 +77,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
 
     @Override
     public int getItemCount() {
-        return data.size() + 2;
+        return data.size() + 1;
     }
 
 

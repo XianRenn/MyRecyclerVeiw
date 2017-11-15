@@ -25,7 +25,8 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
     OnLoadMore onLoadMore;
     public static boolean isScrollDown = false;
     public static boolean isRefresh = false;
-    float startY=0,endY=0,movY=0;
+    float startY = 0, endY = 0, movY = 0;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,26 +42,27 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                switch (event.getAction())
-                {
-                    case  MotionEvent.ACTION_DOWN:
-                        startY=event.getY();
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startY = event.getY();
                         break;
-                    case  MotionEvent.ACTION_MOVE:
-                        endY=event.getY();
-                        movY=endY-startY;
-                      int pos=linearLayoutManager.findFirstVisibleItemPosition();
-                        if(movY>0 && pos==0)
-                        {
-                            Log.i("状态","正在下拉"+movY);
-                            isRefresh=true;
+                    case MotionEvent.ACTION_MOVE:
+                        endY = event.getY();
+                        movY = endY - startY;
+                        int pos = linearLayoutManager.findFirstVisibleItemPosition();
+                        if (movY > 0 && pos == 1) {
+                            Log.i("状态", "正在下拉" + movY);
+                            isRefresh = true;
                         }
-                        else
-                            isRefresh=false;
-                        break;
-                    case  MotionEvent.ACTION_UP:
                         if(movY>0 && isRefresh)
-                        Toast.makeText(MainActivity.this,"放开刷新 ",Toast.LENGTH_SHORT).show();
+                        {
+                            recyclerViewAdapter.notifyItemChanged(0);
+                            touchMove(event);
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (movY > 0 && isRefresh)
+                            Toast.makeText(MainActivity.this, "放开刷新 ", Toast.LENGTH_SHORT).show();
                         break;
                 }
                 return false;
@@ -125,6 +127,35 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
     public void innitData() {
         myPresenter.getData(1);
 
+    }
+
+    public void touchMove(MotionEvent event) {
+        endY = event.getY();
+        movY = endY - startY;
+        View view = myRecyclerView.getChildAt(0);
+        //防止item向上滑出
+        if (movY > 0 && isRefresh) {
+            //防止回退文本显示异常
+//            scrollToPosition(0);
+
+            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
+            params.width = RecyclerView.LayoutParams.MATCH_PARENT;
+            params.height = RecyclerView.LayoutParams.WRAP_CONTENT;
+            //使header随moveY的值从顶部渐渐出现
+            if (movY >= 400) {
+                movY = 100 + movY / 4;
+            } else {
+                movY = movY / 2;
+            }
+            int viewHeight = view.getHeight();
+            if (viewHeight <= 0)
+                viewHeight = 130;
+            movY = movY - viewHeight;
+            params.setMargins(0, (int) movY, 0, 0);
+            view.setLayoutParams(params);
+
+
+        }
     }
 
     private int findMax(int[] lastPositions) {
