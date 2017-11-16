@@ -12,5 +12,12 @@
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="测试"
+        android:onClick="test"
+        android:visibility="gone"
+        />
 
 </RelativeLayout>

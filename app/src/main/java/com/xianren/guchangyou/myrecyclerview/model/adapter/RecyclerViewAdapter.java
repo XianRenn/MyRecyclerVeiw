@@ -1,6 +1,7 @@
 package com.xianren.guchangyou.myrecyclerview.model.adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,8 +40,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
                 view = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_view_sample, parent, false);
                 FooterViewHolder header = new FooterViewHolder(view);
                 RecyclerView.LayoutParams param = (RecyclerView.LayoutParams) view.getLayoutParams();
-                param.height = 0;
-                param.width = 0;
+                param.height=0;
+                int x= 100;
+                Log.i("param",x+"");
+//                param.setMargins(0,-x, 0, 0);
                 view.setLayoutParams(param);
                 return header;
             case TYPE_FOOTER:

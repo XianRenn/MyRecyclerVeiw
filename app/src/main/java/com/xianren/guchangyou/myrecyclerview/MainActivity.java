@@ -54,15 +54,24 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
                             Log.i("状态", "正在下拉" + movY);
                             isRefresh = true;
                         }
-                        if(movY>0 && isRefresh)
-                        {
-                            recyclerViewAdapter.notifyItemChanged(0);
+                        if (movY > 0 && isRefresh) {
                             touchMove(event);
                         }
                         break;
                     case MotionEvent.ACTION_UP:
                         if (movY > 0 && isRefresh)
-                            Toast.makeText(MainActivity.this, "放开刷新 ", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "正在获取数据" +
+                                    "", Toast.LENGTH_SHORT).show();
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                View view = myRecyclerView.getChildAt(0);
+                                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
+                                params.width = RecyclerView.LayoutParams.MATCH_PARENT;
+                                params.height =0;
+                                view.setLayoutParams(params);
+                            }
+                        }, 2000);
                         break;
                 }
                 return false;
@@ -129,6 +138,10 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
 
     }
 
+    public void test(View view) {
+        recyclerViewAdapter.notifyItemInserted(0);
+    }
+
     public void touchMove(MotionEvent event) {
         endY = event.getY();
         movY = endY - startY;
@@ -149,12 +162,14 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
             }
             int viewHeight = view.getHeight();
             if (viewHeight <= 0)
-                viewHeight = 130;
+                viewHeight = 100;
             movY = movY - viewHeight;
-            params.setMargins(0, (int) movY, 0, 0);
+            if (movY >= 0)
+                return;
+            Log.i("movY", movY + "");
+            Log.i("viewHeight", viewHeight + "");
+//            params.height= (int) Math.abs(movY);
             view.setLayoutParams(params);
-
-
         }
     }
 
