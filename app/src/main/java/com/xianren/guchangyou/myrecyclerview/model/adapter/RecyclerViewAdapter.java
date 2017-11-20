@@ -40,7 +40,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
                 view = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_view_sample, parent, false);
                 FooterViewHolder header = new FooterViewHolder(view);
                 RecyclerView.LayoutParams param = (RecyclerView.LayoutParams) view.getLayoutParams();
-                param.height=0;
+//                param.height=0;
                 int x= 100;
                 Log.i("param",x+"");
 //                param.setMargins(0,-x, 0, 0);

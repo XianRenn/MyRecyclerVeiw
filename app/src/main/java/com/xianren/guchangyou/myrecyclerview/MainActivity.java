@@ -1,8 +1,8 @@
 package com.xianren.guchangyou.myrecyclerview;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -11,8 +11,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-import com.xianren.guchangyou.myrecyclerview.model.OnLoadMore;
 import com.xianren.guchangyou.myrecyclerview.View.ViewListener;
+import com.xianren.guchangyou.myrecyclerview.model.OnLoadMore;
 import com.xianren.guchangyou.myrecyclerview.model.adapter.RecyclerViewAdapter;
 import com.xianren.guchangyou.myrecyclerview.presenter.MyPresenter;
 
@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
     OnLoadMore onLoadMore;
     public static boolean isScrollDown = false;
     public static boolean isRefresh = false;
-    float startY = 0, endY = 0, movY = 0;
+    float startY = 0, endY = 0, movY = 0, yy = 0;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -37,11 +37,14 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
         myRecyclerView.setLayoutManager(linearLayoutManager);
         myPresenter.setListener(this);
         recyclerViewAdapter = new RecyclerViewAdapter(myPresenter);
+        myRecyclerView.scrollToPosition(1);
         onLoadMore = recyclerViewAdapter.setLoadMoreListen();
         myRecyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
+                int pos = linearLayoutManager.findFirstVisibleItemPosition();
+                if (pos >= 1)
+                    return false;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         startY = event.getY();
@@ -49,29 +52,53 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
                     case MotionEvent.ACTION_MOVE:
                         endY = event.getY();
                         movY = endY - startY;
-                        int pos = linearLayoutManager.findFirstVisibleItemPosition();
-                        if (movY > 0 && pos == 1) {
+                        Log.i("状态", "startY:" + startY+"   endY:"+endY);
+
+                        if (movY > 0 && pos == 0) {
                             Log.i("状态", "正在下拉" + movY);
                             isRefresh = true;
+                            if(movY>40)
+                            {
+                                Log.i("状态", "放开刷新" + movY);
+                            }
                         }
-                        if (movY > 0 && isRefresh) {
-                            touchMove(event);
-                        }
+//                        if (movY > 0 && isRefresh) {
+//                            touchMove(event);
+//                        }
                         break;
                     case MotionEvent.ACTION_UP:
-                        if (movY > 0 && isRefresh)
-                            Toast.makeText(MainActivity.this, "正在获取数据" +
-                                    "", Toast.LENGTH_SHORT).show();
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                View view = myRecyclerView.getChildAt(0);
-                                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
-                                params.width = RecyclerView.LayoutParams.MATCH_PARENT;
-                                params.height =0;
-                                view.setLayoutParams(params);
+                        LinearLayoutManager linearLayoutManager = (LinearLayoutManager) myRecyclerView.getLayoutManager();
+                        int posNew = linearLayoutManager.findFirstVisibleItemPosition();
+                        if (posNew == 0) {
+                            if(movY>=40)
+                            {
+                                Toast.makeText(MainActivity.this,"",Toast.LENGTH_SHORT).show();
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                    }
+                                },1500);
                             }
-                        }, 2000);
+                            else
+                            {
+                                myRecyclerView.scrollToPosition(1);
+                            }
+
+                        }
+
+//                        if (movY > 0 && isRefresh)
+//                            Toast.makeText(MainActivity.this, "正在获取数据" +
+//                                    "", Toast.LENGTH_SHORT).show();
+//                        new Handler().postDelayed(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                View view = myRecyclerView.getChildAt(0);
+//                                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
+//                                params.width = RecyclerView.LayoutParams.MATCH_PARENT;
+//                                params.height =0;
+//                                view.setLayoutParams(params);
+//                            }
+//                        }, 2000);
                         break;
                 }
                 return false;
