@@ -6,16 +6,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import com.xianren.guchangyou.myrecyclerview.View.ArrowRefreshHeader;
 import com.xianren.guchangyou.myrecyclerview.View.ViewListener;
 import com.xianren.guchangyou.myrecyclerview.model.OnLoadMore;
 import com.xianren.guchangyou.myrecyclerview.model.adapter.RecyclerViewAdapter;
 import com.xianren.guchangyou.myrecyclerview.presenter.MyPresenter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ViewListener {
@@ -24,8 +25,11 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
     RecyclerViewAdapter recyclerViewAdapter;
     OnLoadMore onLoadMore;
     public static boolean isScrollDown = false;
-    public static boolean isRefresh = false;
-    float startY = 0, endY = 0, movY = 0, yy = 0;
+    private boolean pullRefreshEnabled = true;//下拉刷新
+    private float mLastY = -1;
+    private ArrayList<View> mHeaderViews = new ArrayList<>();//头部view的集合
+    private ArrowRefreshHeader mRefreshHeader;//header view
+    private static final float DRAG_RATE = 3;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -35,72 +39,51 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
         myPresenter = new MyPresenter();
         final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         myRecyclerView.setLayoutManager(linearLayoutManager);
+
         myPresenter.setListener(this);
-        recyclerViewAdapter = new RecyclerViewAdapter(myPresenter);
-        myRecyclerView.scrollToPosition(1);
+        ArrowRefreshHeader refreshHeader = new ArrowRefreshHeader(this);
+        mHeaderViews.add(0, refreshHeader);
+        mRefreshHeader = refreshHeader;
+        recyclerViewAdapter = new RecyclerViewAdapter(myPresenter, mHeaderViews);
+//        myRecyclerView.scrollToPosition(1);
         onLoadMore = recyclerViewAdapter.setLoadMoreListen();
+
         myRecyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                int pos = linearLayoutManager.findFirstVisibleItemPosition();
-                if (pos >= 1)
-                    return false;
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        startY = event.getY();
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        endY = event.getY();
-                        movY = endY - startY;
-                        Log.i("状态", "startY:" + startY+"   endY:"+endY);
-
-                        if (movY > 0 && pos == 0) {
-                            Log.i("状态", "正在下拉" + movY);
-                            isRefresh = true;
-                            if(movY>40)
-                            {
-                                Log.i("状态", "放开刷新" + movY);
+            public boolean onTouch(View v, MotionEvent ev) {
+                //下拉刷新的实现
+                if (pullRefreshEnabled) {
+                    if (mLastY == -1) {
+                        mLastY = ev.getRawY();
+                    }
+                    switch (ev.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            mLastY = ev.getRawY();
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            final float deltaY = ev.getRawY() - mLastY;
+                            mLastY = ev.getRawY();
+                            if (isOnTop()) {
+                                mRefreshHeader.onMove(deltaY / DRAG_RATE);
                             }
-                        }
-//                        if (movY > 0 && isRefresh) {
-//                            touchMove(event);
-//                        }
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        LinearLayoutManager linearLayoutManager = (LinearLayoutManager) myRecyclerView.getLayoutManager();
-                        int posNew = linearLayoutManager.findFirstVisibleItemPosition();
-                        if (posNew == 0) {
-                            if(movY>=40)
-                            {
-                                Toast.makeText(MainActivity.this,"",Toast.LENGTH_SHORT).show();
-                                new Handler().postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                    }
-                                },1500);
+                            break;
+                        default:
+                            mLastY = -1;
+                            if (isOnTop()) {
+                                if (mRefreshHeader.releaseAction()) {
+                                    Toast.makeText(MainActivity.this, "获取数据", Toast.LENGTH_SHORT).show();
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            myPresenter.getData(1);
+                                        }
+                                    }, 1500);
+                                }
                             }
-                            else
-                            {
-                                myRecyclerView.scrollToPosition(1);
-                            }
-
-                        }
-
-//                        if (movY > 0 && isRefresh)
-//                            Toast.makeText(MainActivity.this, "正在获取数据" +
-//                                    "", Toast.LENGTH_SHORT).show();
-//                        new Handler().postDelayed(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                View view = myRecyclerView.getChildAt(0);
-//                                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
-//                                params.width = RecyclerView.LayoutParams.MATCH_PARENT;
-//                                params.height =0;
-//                                view.setLayoutParams(params);
-//                            }
-//                        }, 2000);
-                        break;
+                            break;
+                    }
                 }
+
                 return false;
             }
         });
@@ -154,6 +137,9 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
 
     @Override
     public void refreshUi(final List<String> list) {
+        if (isOnTop()) {
+            mRefreshHeader.refreshComplete();
+        }
         recyclerViewAdapter.addData(list);
         recyclerViewAdapter.notifyDataSetChanged();
 
@@ -165,39 +151,14 @@ public class MainActivity extends AppCompatActivity implements ViewListener {
 
     }
 
-    public void test(View view) {
-        recyclerViewAdapter.notifyItemInserted(0);
-    }
+    private boolean isOnTop() {
 
-    public void touchMove(MotionEvent event) {
-        endY = event.getY();
-        movY = endY - startY;
-        View view = myRecyclerView.getChildAt(0);
-        //防止item向上滑出
-        if (movY > 0 && isRefresh) {
-            //防止回退文本显示异常
-//            scrollToPosition(0);
-
-            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
-            params.width = RecyclerView.LayoutParams.MATCH_PARENT;
-            params.height = RecyclerView.LayoutParams.WRAP_CONTENT;
-            //使header随moveY的值从顶部渐渐出现
-            if (movY >= 400) {
-                movY = 100 + movY / 4;
-            } else {
-                movY = movY / 2;
-            }
-            int viewHeight = view.getHeight();
-            if (viewHeight <= 0)
-                viewHeight = 100;
-            movY = movY - viewHeight;
-            if (movY >= 0)
-                return;
-            Log.i("movY", movY + "");
-            Log.i("viewHeight", viewHeight + "");
-//            params.height= (int) Math.abs(movY);
-            view.setLayoutParams(params);
+        if (mHeaderViews == null || mHeaderViews.isEmpty()) {
+            return false;
         }
+
+        View view = mHeaderViews.get(0);
+        return null != view.getParent();
     }
 
     private int findMax(int[] lastPositions) {

@@ -1,23 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="50dp"
-    >
-    <ProgressBar
-        android:id="@+id/pb_footer_view"
-        style="@android:style/Widget.ProgressBar.Small"
+    android:orientation="vertical">
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_gravity="center"
-        android:layout_height="wrap_content" />
+        android:layout_height="50dp"
+        >
 
-    <TextView
-        android:id="@+id/tv_footer_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:text="正在刷新..." />
+        <ProgressBar
+            android:id="@+id/pb_footer_view"
+            android:layout_toLeftOf="@+id/mStatusTextView"
+            style="@android:style/Widget.ProgressBar.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="20dp"
+            android:layout_gravity="center" />
 
+        <TextView
+            android:id="@+id/mStatusTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="正在刷新..." />
+    </RelativeLayout>
 
 </LinearLayout>

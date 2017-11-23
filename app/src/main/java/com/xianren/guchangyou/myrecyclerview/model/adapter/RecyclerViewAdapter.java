@@ -1,7 +1,6 @@
 package com.xianren.guchangyou.myrecyclerview.model.adapter;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,10 +25,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
     public List<String> data;
     MyPresenter myPresenter;
     static int page = 1;
-
-    public RecyclerViewAdapter(MyPresenter myPresenter) {
+    private ArrayList<View> mHeaderViews;
+    public RecyclerViewAdapter(MyPresenter myPresenter,ArrayList<View> headerViews) {
         this.myPresenter = myPresenter;
         data = new ArrayList<>();
+        this.mHeaderViews = headerViews;
     }
 
     @Override
@@ -37,14 +37,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter implements OnLoadM
         View view;
         switch (viewType) {
             case TYPE_HEADER:
-                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_view_sample, parent, false);
-                FooterViewHolder header = new FooterViewHolder(view);
-                RecyclerView.LayoutParams param = (RecyclerView.LayoutParams) view.getLayoutParams();
-//                param.height=0;
-                int x= 100;
-                Log.i("param",x+"");
-//                param.setMargins(0,-x, 0, 0);
-                view.setLayoutParams(param);
+                FooterViewHolder header = new FooterViewHolder(mHeaderViews.get(0));
                 return header;
             case TYPE_FOOTER:
                 view = LayoutInflater.from(parent.getContext()).inflate(R.layout.footer_view_sample, parent, false);
